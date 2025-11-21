@@ -1,0 +1,38 @@
+services:
+  mongo:
+    image: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASS}
+    volumes:
+      - mongo_data:/data/db
+
+  mongo-express:
+    image: mongo-express
+    restart: always
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: ${EXPRESS_USER}
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ${EXPRESS_PASS}
+      ME_CONFIG_MONGODB_URL: mongodb://${MONGO_USER}:${MONGO_PASS}@mongo:27017/
+    ports:
+      - "8081:8081"
+    depends_on:
+      - mongo
+
+  backend:
+    build: .
+    container_name: rfid-world-backend
+    restart: always
+    volumes:
+      - ./src:/app/src
+    env_file: .env
+    ports:
+      - "8000:8000"
+    command: uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
+    depends_on:
+      - mongo
+
+volumes:
+  mongo_data:
+
