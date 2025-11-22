@@ -1,5 +1,5 @@
 from beanie import Document
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, Field
 from datetime import datetime
 from typing import List, Optional
 
@@ -18,10 +18,11 @@ class Taps(BaseModel):
     currentTapStreak: CurrentTapStreak
     tapStreaks: List[TapStreak]
 
+
 class User(Document):
     id: str = Field(alias="_id")
     name: str
+    taps: Taps
 
     class Settings:
         name = "users"
-        bson_encoders = {}

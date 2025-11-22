@@ -1,44 +1,16 @@
 from fastapi import FastAPI
-from src.db import init_db
-from src.models.users import User
+from src.core.db import init_db
+from src.routers import users_router
 
-app = FastAPI()
+app = FastAPI(title="RFID Backend")
 
 @app.on_event("startup")
-async def startup():
+async def startup_event():
     await init_db()
 
-@app.get("/users")
-async def list_users():
-    users = await User.find_all().to_list()
-    return users
+# include your routers
+app.include_router(users_router)
 
-@app.get("/users/{user_id}")
-async def get_user(user_id: str):
-    user = await User.get(user_id)  # now user_id matches _id string
-    if not user:
-        return {"error": "User not found"}
-    return user
-
-@app.get("/test_mongo")
-async def test_mongo():
-    uri = os.environ.get("MONGO_URI")
-    client = AsyncIOMotorClient(uri)
-
-    try:
-        db = client["admin"]
-        coll = db["system.version"]
-        versions = await coll.find().to_list(length=10)
-
-        return {
-            "connected": True,
-            "versions": versions,
-            "uri": uri
-        }
-
-    except Exception as e:
-        return {
-            "connected": False,
-            "error": str(e),
-            "uri": uri
-        }
+@app.get("/")
+async def root():
+    return {"status": "ok"}
